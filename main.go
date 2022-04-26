@@ -2,8 +2,8 @@ package main
 
 import (
 	clientset "crd-practice/pkg/client/clientset/versioned"
+	informers "crd-practice/pkg/client/informers/externalversions"
 	"flag"
-	"k8s.io/client-go/informers"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
@@ -29,6 +29,7 @@ func main() {
 	// informerFactory 工厂类， 这里注入我们通过代码生成的 client
 	// clent 主要用于和 API Server 进行通信，实现 ListAndWatch
 	informers.NewSharedInformerFactory(networkClient, 5*time.Second)
+
 }
 
 func initClient() (*kubernetes.Clientset, *rest.Config, error) {
