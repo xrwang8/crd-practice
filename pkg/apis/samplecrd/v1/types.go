@@ -1,16 +1,25 @@
 package v1
 
-import metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+import (
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+)
 
 // +genclient
 // +genclient:noStatus
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
-
 type Network struct {
+	// TypeMeta is the metadata for the resource, like kind and apiversion
 	metav1.TypeMeta `json:",inline"`
-
+	// ObjectMeta contains the metadata for the particular object, including
+	// things like...
+	//  - name
+	//  - namespace
+	//  - self link
+	//  - labels
+	//  - ... etc ...
 	metav1.ObjectMeta `json:"metadata,omitempty"`
-	Spec              networkspec `json:"spec"`
+
+	Spec networkspec `json:"spec"`
 }
 
 // +k8s:deepcopy-gen=false
@@ -23,8 +32,7 @@ type networkspec struct {
 
 type NetworkList struct {
 	metav1.TypeMeta `json:",inline"`
-
-	metav1.ListMeta `json:"metadata,omitempty"`
+	metav1.ListMeta `json:"metadata"`
 
 	Items []Network `json:"items"`
 }
