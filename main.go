@@ -9,12 +9,43 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/util/homedir"
 	"k8s.io/klog/v2"
+	"os"
+	"os/signal"
 	"path/filepath"
+	"syscall"
 	"time"
 )
 
-func main() {
+var (
+	onlyOneSignalHandler = make(chan struct{})
+	shutdownSignals      = []os.Signal{os.Interrupt, syscall.SIGTERM}
+)
 
+// SetupSignalHandler 注册 SIGTERM 和 SIGINT 信号
+// 返回一个 stop channel，该通道在捕获到第一个信号时被关闭
+// 如果捕捉到第二个信号，程序将直接退出
+func setupSignalHandler() (stopCh <-chan struct{}) {
+	// 当调用两次的时候 panics
+	close(onlyOneSignalHandler)
+	stop := make(chan struct{})
+	c := make(chan os.Signal, 2)
+	// Notify 函数让 signal 包将输入信号转发到 c
+	// 如果没有列出要传递的信号，会将所有输入信号传递到 c；否则只传递列出的输入信号
+	// 参考文档：https://cloud.tencent.com/developer/article/1645996
+	signal.Notify(c, shutdownSignals...)
+	go func() {
+		<-c
+		close(stop)
+		<-c
+		os.Exit(1) // 第二个信号，直接退出
+	}()
+
+	return stop
+}
+
+func main() {
+	//设置一个信号处理，应用于优雅关闭
+	stopCh := setupSignalHandler()
 	flag.Parse()
 	_, cfg, err := initClient()
 	if err != nil {
@@ -29,6 +60,8 @@ func main() {
 	// informerFactory 工厂类， 这里注入我们通过代码生成的 client
 	// clent 主要用于和 API Server 进行通信，实现 ListAndWatch
 	informers.NewSharedInformerFactory(networkClient, 5*time.Second)
+
+	// 实例化自定义的控制器
 
 }
 
