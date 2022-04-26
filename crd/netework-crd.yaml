@@ -2,7 +2,9 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   # name 必须匹配下面的spec字段：<plural>.<group>
-  name: network.samplecrd.k8s.io
+  name: networks.samplecrd.k8s.io
+  annotations:
+    api-approved.kubernetes.io: "https://github.com/kubernetes/kubernetes/pull/78458"
 spec:
   # group 名用于 REST API 中的定义：/apis/<group>/<version>
   group: samplecrd.k8s.io
@@ -11,9 +13,26 @@ spec:
     - name: v1 # 版本名称，比如 v1、v2beta1 等等
       served: true
       storage: true # 是否开启通过 REST APIs 访问 `/apis/<group>/<version>/...`
+      schema: # 定义自定义对象的声明规范
+        openAPIV3Schema:
+          description: Define networks YAML Spec
+          type: object
+          properties:
+
+            # 自定义CRD的字段类型
+            spec:
+              type: object
+              properties:
+                cidr:
+                  type: string
+                gateway:
+                  type: string
+
   names:
     kind: Network
     plural: networks
+    shortNames:
+      - net
   scope: Namespaced
 
 
